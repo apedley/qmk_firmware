@@ -24,13 +24,18 @@ enum anne_pro_layers {
     FN2,
 };
 
+// bool is_alt_tab_active = false;
+// uint16_t alt_tab_timer = 0;
+
 enum custom_keycodes {
     SELWORD = SAFE_RANGE,
+    SELLINE,
     UPDIR,
     ONEPWD,
+    BRACES,
+    // ALT_TAB,
     // Other custom keys...
 };
-
 // clang-format off
 // Key symbols are based on QMK. Use them to remap your keyboard
 /*
@@ -84,8 +89,8 @@ enum custom_keycodes {
   */
  [FN1] = LAYOUT_60_ansi( /* FN1 */
     KC_GRV,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,  KC_DEL,
-    _______, SELWORD, KC_UP,   UPDIR, _______, _______, _______, _______, KC_MS_BTN1, KC_MS_BTN2, KC_PSCR, KC_HOME, KC_END,  ONEPWD,
-    _______, KC_LEFT, KC_DOWN, KC_RGHT, _______, _______, KC_MS_LEFT, KC_MS_DOWN, KC_MS_UP, KC_MS_RIGHT, KC_PGUP, KC_PGDN, _______,
+    _______, UPDIR, KC_UP,   SELWORD,   SELLINE, _______, _______, _______, KC_MS_BTN1, KC_MS_BTN2, KC_PSCR, KC_HOME, KC_END,  ONEPWD,
+    _______, KC_LEFT, KC_DOWN, KC_RGHT, BRACES, _______, KC_MS_LEFT, KC_MS_DOWN, KC_MS_UP, KC_MS_RIGHT, KC_PGUP, KC_PGDN, _______,
     _______,          KC_VOLU, KC_VOLD, KC_MUTE, _______, _______, _______, KC_MS_WH_UP, KC_MS_WH_DOWN, KC_INS,  KC_DEL,  _______,
     _______, _______, _______,                            _______,                   _______, _______, MO(FN2), _______
 ),
@@ -118,6 +123,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
     if (!process_select_word(keycode, record, SELWORD)) {
         return false;
     }
+
+    const uint8_t mods         = get_mods();
+    const uint8_t oneshot_mods = get_oneshot_mods();
+
     switch (keycode) {
         case UPDIR: // Types ../ to go up a directory on the shell.
             if (record->event.pressed) {
@@ -126,9 +135,41 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
             return false;
         case ONEPWD:
             if (record->event.pressed) {
-                SEND_STRING("");
+                SEND_STRING("OOPS");
             }
             return false;
+        case BRACES: // Types [], {}, or <> and puts cursor between braces.
+            if (record->event.pressed) {
+                clear_oneshot_mods(); // Temporarily disable mods.
+                unregister_mods(MOD_MASK_CSAG);
+                if ((mods | oneshot_mods) & MOD_MASK_SHIFT) {
+                    SEND_STRING("{}");
+                } else if ((mods | oneshot_mods) & MOD_MASK_CTRL) {
+                    SEND_STRING("()");
+                } else {
+                    SEND_STRING("[]");
+                }
+                tap_code(KC_LEFT);   // Move cursor between braces.
+                register_mods(mods); // Restore mods.
+            }
+            return false;
+        case SELLINE:
+            if (record->event.pressed) {
+                SEND_STRING(SS_TAP(X_HOME) SS_LSFT(SS_TAP(X_END)));
+            }
+            return false;
+            // case ALT_TAB:
+            //     if (record->event.pressed) {
+            //         if (!is_alt_tab_active) {
+            //             is_alt_tab_active = true;
+            //             register_code(KC_LALT);
+            //         }
+            //         alt_tab_timer = timer_read();
+            //         register_code(KC_TAB);
+            //     } else {
+            //         unregister_code(KC_TAB);
+            //     }
+            //     break;
     }
     return true;
 }
@@ -174,6 +215,12 @@ bool led_update_user(led_t leds) {
 }
 
 void matrix_scan_user(void) {
-  select_word_task();
-}
+    select_word_task();
 
+    //   if (is_alt_tab_active) {
+    //     if (timer_elapsed(alt_tab_timer) > 1000) {
+    //       unregister_code(KC_LALT);
+    //       is_alt_tab_active = false;
+    //     }
+    //   }
+}
