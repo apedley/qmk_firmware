@@ -17,7 +17,7 @@ PROGRAM_CMD = annepro2_tools --boot $(BUILD_DIR)/$(TARGET).bin
 #   change yes to no to disable
 #
 BOOTMAGIC_ENABLE = yes      # Enable Bootmagic Lite
-MOUSEKEY_ENABLE = no        # Mouse keys
+MOUSEKEY_ENABLE = yes        # Mouse keys
 EXTRAKEY_ENABLE = yes       # Audio control and System control
 CONSOLE_ENABLE = no         # Console for debug
 COMMAND_ENABLE = no         # Commands for debug and configuration
@@ -43,6 +43,7 @@ RAW_ENABLE = no
 MIDI_ENABLE = no
 VIRTSER_ENABLE = no
 COMBO_ENABLE = no
+CAPS_WORD_ENABLE = yes
 
 # Anne Pro 2
 SRC = \
@@ -52,3 +53,5 @@ SRC = \
 	protocol.c \
 	rgb_driver.c \
 	config_led.c
+
+SRC += features/select_word.c
