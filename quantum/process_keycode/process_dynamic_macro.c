@@ -29,7 +29,7 @@ void dynamic_macro_led_blink(void) {
 
 /* User hooks for Dynamic Macros */
 
-__attribute__((weak)) void dynamic_macro_record_start_user(void) {
+__attribute__((weak)) void dynamic_macro_record_start_user(int8_t direction) {
     dynamic_macro_led_blink();
 }
 
@@ -65,7 +65,7 @@ __attribute__((weak)) bool dynamic_macro_valid_key_user(uint16_t keycode, keyrec
 void dynamic_macro_record_start(keyrecord_t **macro_pointer, keyrecord_t *macro_buffer) {
     dprintln("dynamic macro recording: started");
 
-    dynamic_macro_record_start_user();
+    dynamic_macro_record_start_user(0);
 
     clear_keyboard();
     layer_clear();
