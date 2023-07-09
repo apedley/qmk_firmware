@@ -51,5 +51,5 @@ enum {
     BT_HST3 = KC_TRNS,
     BAT_LVL = KC_TRNS,
 #endif
-	NEW_SAFE_RANGE
+	NEWER_SAFE_RANGE
 };
